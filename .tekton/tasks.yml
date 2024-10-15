@@ -21,8 +21,8 @@ spec:
         echo "Removing all files from ${WORKSPACE_SOURCE_PATH} ..."
         if [ -d "${WORKSPACE_SOURCE_PATH}" ] ; then
           rm -rf "${WORKSPACE_SOURCE_PATH:?}"/*
-          rm -rf "${WORKSPACE_SOURCE_PATH}"/.[!.]*
-          rm -rf "${WORKSPACE_SOURCE_PATH}"/..?*
+          rm -rf "${WORKSPACE_SOURCE_PATH}"/.[!.]* || true
+          rm -rf "${WORKSPACE_SOURCE_PATH}"/..?* || true
         fi
 
 ---
@@ -38,13 +38,16 @@ spec:
       image: alpine/git
       script: |
         #!/bin/sh
-        git clone <YOUR_REPOSITORY_URL> .
+        set -e
+        echo "Cloning repository..."
+        git clone https://github.com/FrostPrince003/ci-cd-final-project.git .  # Use your actual repository URL
+        echo "Clone complete."
 
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: flake8
+  name: flake8-linting
 spec:
   workspaces:
     - name: source
@@ -64,7 +67,7 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: nose
+  name: nose-tests
 spec:
   workspaces:
     - name: source
@@ -88,7 +91,7 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: buildah
+  name: buildah-task
 spec:
   workspaces:
     - name: source
